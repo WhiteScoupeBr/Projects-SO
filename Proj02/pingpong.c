@@ -21,8 +21,6 @@ void pingpong_init () {
 	taskAtual->context = ContextMain;
 	taskMain = taskAtual;
 
-	task_create(&dispatcher,dispatcher_body(), "Dispatcher");
-	
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
 
