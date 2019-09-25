@@ -22,6 +22,21 @@ void Body (void * arg)
    task_exit (0) ;
 }
 
+dispatcher_body () // dispatcher é uma tarefa
+{
+while ( userTasks > 0 )
+{
+ next = scheduler() ; // scheduler é uma função
+if (next)
+{
+ ... // ações antes de lançar a tarefa "next", se houverem
+ task_switch (next) ; // transfere controle para a tarefa "next"
+ ... // ações após retornar da tarefa "next", se houverem
+}
+}
+ task_exit(0) ; // encerra a tarefa dispatcher
+}
+
 int main (int argc, char *argv[])
 {
    printf ("Main INICIO\n");
