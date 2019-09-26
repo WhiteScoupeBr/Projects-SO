@@ -84,7 +84,7 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
-	queue_append ((queue_t **) &pronta, (queue_t*) &task) ;
+	queue_append ((queue_t **) &pronta, (queue_t*) task) ;
 
 	#ifdef DEBUG
 	printf("task_create: criou tarefa %d\n", taskAtual->tid);
@@ -115,7 +115,13 @@ void task_exit (int exit_code){
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
 	#endif
 	queue_remove ((queue_t**) &pronta, (queue_t*) &taskAtual) ;
-	queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);	
+	queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);
+
+	ucontext_t *aux= &taskAtual->context;
+	taskAtual=taskMain;
+	swapcontext(aux,&taskMain->context);	
+
+
 	task_switch(&dispatcher);
 }
 
