@@ -52,7 +52,7 @@ void pingpong_init () {
 	taskAtual->context = ContextMain;
 	taskMain = taskAtual;
 
-	task_create(&dispatcher,dispatcher_body(), "Dispatcher");
+	task_create(&dispatcher, dispatcher_body(), "Dispatcher");
 
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
@@ -116,7 +116,7 @@ void task_exit (int exit_code){
 	#endif
 	queue_remove ((queue_t**) &pronta, (queue_t*) &taskAtual) ;
 	queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);	
-	task_switch(dispatcher);
+	task_switch(&dispatcher);
 }
 
 int task_id (){
