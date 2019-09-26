@@ -13,7 +13,7 @@ ucontext_t ContextMain;
 task_t *taskAtual;
 task_t *taskMain;
 task_t *nova,*pronta,*exec,*suspensa,*terminada;
-task_t *dispatcher;
+task_t dispatcher;
 
 
 /*****************************************************/
@@ -25,7 +25,7 @@ void pingpong_init () {
 	taskAtual->context = ContextMain;
 	taskMain = taskAtual;
 
-	task_create(&dispatcher,dispatcher_body(), "Dispatcher");
+	task_create(&dispatcher,dispatcher_body, "Dispatcher");
 
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
@@ -106,7 +106,7 @@ void task_yield(){
 task_t * scheduler(){
 
     task_t* ptr = pronta;
-    queue_remove((queue_t**) &pronta, (queue_t*) &ptr);
+    queue_remove((queue_t**) &pronta, (queue_t*) ptr);
 
     return ptr;
 }
@@ -114,9 +114,9 @@ task_t * scheduler(){
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 
-   int userTasks = queue_size((queue_t*) pronta) ;
+   //int userTasks =  ;
    task_t* next;
-   while ( userTasks > 0 )
+   while ( queue_size((queue_t*) pronta) > 0 )
    {
       next = scheduler() ; // scheduler é uma função
       if (next)
@@ -132,14 +132,14 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 void task_suspend(task_t *task, task_t **queue){
 
 	if(task==NULL){
-		if(!queue==NULL){
+		if(queue_size((queue_t*) queue)!=NULL){
 			queue_remove ((queue_t**) &exec, (queue_t*) &taskAtual) ;
 		}
 		queue_append ((queue_t **) &queue, (queue_t*) &taskAtual);
 		taskAtual->state = 3;
 	}
 	else{
-		if(!queue==NULL){
+		if(queue_size((queue_t*) queue)!=NULL){
 			queue_remove ((queue_t**) &exec, (queue_t*) &task) ;
 		}
 		queue_append ((queue_t **) &queue, (queue_t*) &task);
