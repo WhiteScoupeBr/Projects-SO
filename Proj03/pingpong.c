@@ -13,6 +13,7 @@ ucontext_t ContextMain;
 task_t *taskAtual;
 task_t *taskMain;
 task_t *nova,*pronta,*exec,*suspensa,*terminada;
+task_t *dispatcher;
 
 
 /*****************************************************/
@@ -102,9 +103,19 @@ void task_yield(){
 
 }
 
+task_t * scheduler(){
+
+    task_t* ptr = pronta;
+    queue_remove((queue_t**) &pronta, (queue_t*) &ptr);
+
+    return ptr;
+}
+
+
 void dispatcher_body (){ // dispatcher é uma tarefa
 
-   int userTask = queue_size((queue_t*) pronta) ;
+   int userTasks = queue_size((queue_t*) pronta) ;
+   task_t* next;
    while ( userTasks > 0 )
    {
       next = scheduler() ; // scheduler é uma função
@@ -145,10 +156,3 @@ void task_resume (task_t *task){
 	task->state=2;
 }
 
-task_t * scheduler(){
-
-    task_t * ptr = pronta;
-    queue_remove((queue_t**) &pronta, aux);
-
-    return ptr;
-}
