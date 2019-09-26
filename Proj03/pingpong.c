@@ -52,7 +52,7 @@ void pingpong_init () {
 	taskAtual->context = ContextMain;
 	taskMain = taskAtual;
 
-	task_create(&dispatcher, dispatcher_body(), "Dispatcher");
+	task_create(&dispatcher,dispatcher_body, "Dispatcher");
 
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
@@ -126,13 +126,13 @@ int task_id (){
 void task_yield(){
 
 	queue_append ((queue_t **) &pronta, (queue_t*) &taskAtual);	
-	task_switch(dispatcher);
+	task_switch(&dispatcher);
 
 }
 
 
 
-void task_suspend(task_t *task, task_t **queue){
+/*void task_suspend(task_t *task, task_t **queue){
 
 	if(task==NULL){
 		if(queue_size((queue_t*) queue)!=NULL){
@@ -159,3 +159,4 @@ void task_resume (task_t *task){
 	task->state=2;
 }
 
+*/
