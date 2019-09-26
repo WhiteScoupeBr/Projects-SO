@@ -17,6 +17,33 @@ task_t dispatcher;
 
 
 /*****************************************************/
+
+task_t * scheduler(){
+
+    task_t* ptr = pronta;
+    queue_remove((queue_t**) &pronta, (queue_t*) ptr);
+
+    return ptr;
+}
+
+
+void dispatcher_body (){ // dispatcher é uma tarefa
+
+   //int userTasks =  ;
+   task_t* next;
+   while ( queue_size((queue_t*) pronta) > 0 )
+   {
+      next = scheduler() ; // scheduler é uma função
+      if (next)
+      {
+         // ações antes de lançar a tarefa "next", se houverem
+         task_switch (next) ; // transfere controle para a tarefa "next"
+         // ações após retornar da tarefa "next", se houverem
+      }
+   }
+ task_exit(0) ; // encerra a tarefa dispatcher
+}
+
 void pingpong_init () {
 
 	taskAtual = (task_t*)(malloc(sizeof(task_t)));
@@ -25,7 +52,7 @@ void pingpong_init () {
 	taskAtual->context = ContextMain;
 	taskMain = taskAtual;
 
-	task_create(&dispatcher,dispatcher_body, "Dispatcher");
+	task_create(&dispatcher,dispatcher_body(), "Dispatcher");
 
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
@@ -103,31 +130,7 @@ void task_yield(){
 
 }
 
-task_t * scheduler(){
 
-    task_t* ptr = pronta;
-    queue_remove((queue_t**) &pronta, (queue_t*) ptr);
-
-    return ptr;
-}
-
-
-void dispatcher_body (){ // dispatcher é uma tarefa
-
-   //int userTasks =  ;
-   task_t* next;
-   while ( queue_size((queue_t*) pronta) > 0 )
-   {
-      next = scheduler() ; // scheduler é uma função
-      if (next)
-      {
-         // ações antes de lançar a tarefa "next", se houverem
-         task_switch (next) ; // transfere controle para a tarefa "next"
-         // ações após retornar da tarefa "next", se houverem
-      }
-   }
- task_exit(0) ; // encerra a tarefa dispatcher
-}
 
 void task_suspend(task_t *task, task_t **queue){
 
