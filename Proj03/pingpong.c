@@ -41,6 +41,7 @@ void dispatcher_body (){ // dispatcher é uma tarefa
          // ações após retornar da tarefa "next", se houverem
       }
    }
+   printf("ENCERRANDO O DISPA\n");
  task_exit(0) ; // encerra a tarefa dispatcher
 }
 
@@ -96,10 +97,12 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 int task_switch (task_t *task){
 
 	if (task){
+		queue_append ((queue_t **) &pronta, (queue_t*) &taskAtual);
 		ucontext_t *aux= &taskAtual->context;
 		taskAtual= task;
 		swapcontext(aux, &task->context);
 		taskAtual->state=4;
+
 
 		#ifdef DEBUG
 		printf ("task_switch: trocando contexto %d -> %d\n", taskAtual->tid, task->tid ) ;
@@ -131,7 +134,7 @@ int task_id (){
 
 void task_yield(){
 
-	queue_append ((queue_t **) &pronta, (queue_t*) &taskAtual);	
+	queue_append ((queue_t**) &pronta, (queue_t*) &taskAtual);	
 	task_switch(&dispatcher);
 
 }
