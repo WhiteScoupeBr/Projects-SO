@@ -56,13 +56,12 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	static int id=0;
 	char *stack ;
-	ucontext_t aux;
 
 	id++;
 
 	task->args = arg;
 	task->tid = id;
-
+	task->state= 2;
 	getcontext (&task->context);
 
 	stack = malloc (STACKSIZE) ;
@@ -101,6 +100,7 @@ void task_exit (int exit_code){
 	
 		
 	ucontext_t *aux= &taskAtual->context;
+	task->state=5;
 	if(taskAtual==&dispatcher){
 		taskAtual=taskMain;
 	}
@@ -116,6 +116,7 @@ void task_exit (int exit_code){
 int task_id (){
 	return taskAtual->tid;
 }
+
 void task_yield(){
 	
 	task_switch(&dispatcher);
