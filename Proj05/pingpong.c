@@ -33,7 +33,6 @@ task_t * scheduler(){
 	pronta=pronta->next;
 	pronta->quantum=20;
 	return pronta;
-
 }
 
 void task_yield(){
@@ -128,10 +127,13 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 	
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
-	if(task!=&dispatcher)
+	if(task!=&dispatcher){
 		queue_append((queue_t**)&pronta,(queue_t*)task);
-
-
+		task->flag=0;
+	}
+	else
+		task->flag=1;
+		
 	return id;
 }
 
@@ -149,7 +151,6 @@ int task_switch (task_t *task){
 }
 
 void task_exit (int exit_code){
-	
 		
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual->state=5;

@@ -20,6 +20,7 @@ typedef struct task_t
   int prio;
   int prioD;
   int quantum;
+  int flag;
   // preencher quando necessário
 } task_t ;
 
