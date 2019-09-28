@@ -94,8 +94,9 @@ int task_switch (task_t *task){
 	if (task){
 		ucontext_t *aux= &taskAtual->context;
 		taskAtual= task;
+		taskAtual->state=4;
 		swapcontext(aux, &task->context);
-		task->state=4;
+		
 	}
 	else
 		return -1;
@@ -105,13 +106,14 @@ void task_exit (int exit_code){
 	
 		
 	ucontext_t *aux= &taskAtual->context;
-	task->state=5;
+	taskAtual->state=5;
 	if(taskAtual==&dispatcher){
 		taskAtual=taskMain;
 	}
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
+		
 		pronta=pronta->prev;
 		taskAtual=&dispatcher;
 	}
