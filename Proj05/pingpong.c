@@ -43,14 +43,15 @@ void task_yield(){
 
 void tratador(int signum){
 	taskAtual->quantum--;
-	if(taskAtual->quantum==0){
+	if(taskAtual->flag==0){
+		if(taskAtual->quantum==0)
 		task_yield();
-	}
+	}	
 }
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 
-   //pronta=pronta->prev;
+   pronta=pronta->prev;
    task_t* next;
    while ( queue_size((queue_t*) pronta) > 1 )
    {
@@ -83,7 +84,7 @@ void pingpong_init () {
       exit (1) ;
    }
   // ajusta valores do temporizador
-	timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
+	timer.it_value.tv_usec = 0 ;      // primeiro disparo, em micro-segundos
 	timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
 	timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
 	timer.it_interval.tv_sec  = 0.1 ;   // disparos subsequentes, em segundos
@@ -108,7 +109,7 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 	task->args = arg;
 	task->tid = id;
 	task->state= 2;
-	task->prio =0;
+	task->prio = 0;
 	task->prioD = 0;
 	task->quantum=20;
 	getcontext (&task->context);
