@@ -28,7 +28,7 @@ task_t * scheduler(){
 void dispatcher_body (){ // dispatcher é uma tarefa
 
    task_t* next;
-   while ( queue_size((queue_t*) pronta) > 0 )
+   while ( queue_size((queue_t*) pronta) > 1 )
    {
       next = scheduler() ; // scheduler é uma função
       if (next)
@@ -103,6 +103,7 @@ int task_switch (task_t *task){
 
 void task_exit (int exit_code){
 	
+		
 	#ifdef DEBUG
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
 	#endif
@@ -112,7 +113,7 @@ void task_exit (int exit_code){
 	}
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
-		pronta=pronta->next;
+		pronta=pronta->prev;
 		taskAtual=&dispatcher;
 	}
 
