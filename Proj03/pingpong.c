@@ -21,7 +21,6 @@ task_t dispatcher;
 task_t * scheduler(){
 
     pronta=pronta->next; 
-    printf("%d\n",pronta->tid );
     return pronta;
 }
 
@@ -45,11 +44,10 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
 void pingpong_init () {
 
-	taskAtual = (task_t*)(malloc(sizeof(task_t)));
-	taskAtual->tid = 0;
-	taskAtual->state = 1;
-	taskAtual->context = ContextMain;
-	taskMain = taskAtual;
+	taskMain = (task_t*)(malloc(sizeof(task_t)));
+	taskMain->tid = 0;
+	taskMain->context = ContextMain;
+	taskAtual = taskMain;
 
 	task_create(&dispatcher,dispatcher_body, "Dispatcher");
 
