@@ -12,7 +12,7 @@
 ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
-task_t *nova,*pronta,*exec,*suspensa,*terminada;
+task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
 
 
@@ -27,18 +27,15 @@ task_t * scheduler(){
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 
-   //int userTasks =  ;
    task_t* next;
    while ( queue_size((queue_t*) pronta) > 0 )
    {
       next = scheduler() ; // scheduler é uma função
       if (next)
       {
- 
          task_switch (next) ;
       }
    }
-   printf("ENCERRANDO O DISPA\n");
  task_exit(0) ; // encerra a tarefa dispatcher
 }
 
@@ -49,6 +46,7 @@ void pingpong_init () {
 	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
+	task_create(&dispatcher,dispatcher_body,"Dispatcher");
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
 
@@ -79,6 +77,7 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
+	queue_append((queue_t**)&pronta,(queue_t*)task);
 
 	#ifdef DEBUG
 	printf("task_create: criou tarefa %d\n", taskAtual->tid);
@@ -108,17 +107,21 @@ void task_exit (int exit_code){
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
 	#endif
 	ucontext_t *aux= &taskAtual->context;
-	taskAtual= taskMain;
-	swapcontext(aux, &taskMain->context);
+	if(taskAtual==&dispatcher){
+		taskAtual=taskMain;
+	}
+	else{
+		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
+		pronta=pronta->next;
+		taskAtual=&dispatcher;
+	}
+
+	swapcontext(aux, &taskAtual->context);
 }
 
 int task_id (){
 	return taskAtual->tid;
 }
-int task_id (){
-	return taskAtual->tid;
-}
-
 void task_yield(){
 	
 	task_switch(&dispatcher);
