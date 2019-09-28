@@ -12,6 +12,7 @@
 ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
+task_t *taskPrio;
 task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
 
@@ -20,10 +21,32 @@ task_t dispatcher;
 
 task_t * scheduler(){
 
-    pronta=pronta->next; 
+	task_t *ptr = pronta;
+	task_t *ptrPrio;
+	int i;
+	int auxP = pronta->prioD;
 
+	for(i=0;i<=queue_size((queue_t*)pronta);i++){
+		if(ptr->prioD<auxP){
+			auxP=ptr->prioD;
+			ptrPrio=ptr;
+		}
+		ptr=ptr->next;
+	}
 
-    return pronta;
+	ptr=ptr->next;
+	
+	for(i=0;i<=queue_size((queue_t*)pronta);i++){
+		if(ptr!=ptrPrio){
+			if(ptr->prioD<-19)
+						ptr->prioD--;
+		}
+		ptr=ptr->next;
+	}
+
+	ptrPrio->prioD=ptrPrio->prio;
+
+    return ptrPrio;
 }
 
 void task_yield(){
@@ -67,6 +90,8 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 	task->args = arg;
 	task->tid = id;
 	task->state= 2;
+	task->prio =0;
+	task->prioD = task->prio;
 	getcontext (&task->context);
 
 	stack = malloc (STACKSIZE) ;
@@ -125,11 +150,39 @@ int task_id (){
 	return taskAtual->tid;
 }
 
+void task_setprio (task_t *task, int prio){
+	task_t * ptr = task;
+	if(prio>-20&&prio<20){
+		if(ptr==NULL){
+			taskAtual->prio=prio;
+			taskAtual->prioD=prio;
+		}
+		else{
+			ptr->prio=prio;
+			ptr->prioD=prio;
+		}
+	}
+	else
+	{
+		printf("Prioridade invalida");
+	}
+	
+	
+}
 
+int task_getprio (task_t *task){
+	task_t * ptr = task;
+	if(ptr==NULL){
+		return taskAtual->prio;
+	}
+	else{
+		return ptr->prio;
+	}
+	
+}
 
-
-
-/*void task_suspend(task_t *task, task_t **queue){
+/*
+void task_suspend(task_t *task, task_t **queue){
 
 	if(task==NULL){
 		if(queue_size((queue_t*) queue)!=NULL){
@@ -155,5 +208,5 @@ void task_resume (task_t *task){
 	queue_append ((queue_t **) &pronta, (queue_t*) &task);
 	task->state=2;
 }
-
 */
+

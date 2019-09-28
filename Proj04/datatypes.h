@@ -17,6 +17,8 @@ typedef struct task_t
   ucontext_t context;
   void *args;
   int state;
+  int prio;
+  int prioD;
   // preencher quando necessário
 } task_t ;
 
