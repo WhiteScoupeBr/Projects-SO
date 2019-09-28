@@ -9,7 +9,7 @@
 #endif
 
 #define STACKSIZE 32768
-ucontext_t ContextMain;
+ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
 task_t *nova,*pronta,*exec,*suspensa,*terminada;
@@ -44,21 +44,22 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
 void pingpong_init () {
 
+	setvbuf (stdout, 0, _IONBF, 0) ;
+
 	taskMain = (task_t*)(malloc(sizeof(task_t)));
 	taskMain->tid = 0;
-	taskMain->context = ContextMain;
+	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
 	task_create(&dispatcher,dispatcher_body, "Dispatcher");
 
-	setvbuf (stdout, 0, _IONBF, 0) ;
+	
 }
 
 int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	static int id=0;
 	char *stack ;
-	ucontext_t aux;
 
 	id++;
 
@@ -81,6 +82,8 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
+	task->prev=NULL;
+	task->next=NULL;
 
 	queue_append ((queue_t **) &pronta, (queue_t*) task) ;
 
@@ -108,9 +111,9 @@ int task_switch (task_t *task){
 
 void task_exit (int exit_code){
 	
-	#ifdef DEBUG
+	/*#ifdef DEBUG
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
-	#endif
+	#endif*/
 
 	ucontext_t *aux= &taskAtual->context;
 

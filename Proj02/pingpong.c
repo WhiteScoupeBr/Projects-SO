@@ -8,7 +8,7 @@
 #endif
 
 #define STACKSIZE 32768
-ucontext_t ContextMain;
+ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
 
@@ -18,7 +18,7 @@ void pingpong_init () {
 
 	taskMain = (task_t*)(malloc(sizeof(task_t)));
 	taskMain->tid = 0;
-	taskMain->context = ContextMain;
+	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
 	setvbuf (stdout, 0, _IONBF, 0) ;
