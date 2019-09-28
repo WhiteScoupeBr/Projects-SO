@@ -117,15 +117,21 @@ void task_exit (int exit_code){
 	#ifdef DEBUG
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
 	#endif
-	queue_remove ((queue_t**) &pronta, (queue_t*) &taskAtual) ;
-	queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);
+
+	if(taskAtual!=&dispatcher){
+		queue_remove ((queue_t**) &pronta, (queue_t*) &taskAtual) ;
+		queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);	
+	}
+	else {
+		taskAtual=taskMain;
+	}
 
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual=taskMain;
 	swapcontext(aux,&taskMain->context);	
 
 
-	task_switch(&dispatcher);
+	//task_switch(&dispatcher);
 }
 
 int task_id (){
@@ -134,7 +140,7 @@ int task_id (){
 
 void task_yield(){
 
-	queue_append ((queue_t**) &pronta, (queue_t*) &taskAtual);	
+	queue_append ((queue_t**) &pronta, (queue_t*) taskAtual);	
 	task_switch(&dispatcher);
 
 }
