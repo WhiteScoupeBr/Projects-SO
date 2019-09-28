@@ -43,10 +43,16 @@ void task_yield(){
 
 void tratador(int signum){
 	taskAtual->quantum--;
+	printf("Tratador");
 	if(taskAtual->flag==0){
 		if(taskAtual->quantum==0)
 		task_yield();
 	}	
+	else
+	{
+		return;
+	}
+	
 }
 
 void dispatcher_body (){ // dispatcher é uma tarefa
