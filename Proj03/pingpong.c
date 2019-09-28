@@ -44,28 +44,25 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
 void pingpong_init () {
 
-	setvbuf (stdout, 0, _IONBF, 0) ;
-
 	taskMain = (task_t*)(malloc(sizeof(task_t)));
 	taskMain->tid = 0;
 	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
-	task_create(&dispatcher,dispatcher_body, "Dispatcher");
-
-	
+	setvbuf (stdout, 0, _IONBF, 0) ;
 }
 
 int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	static int id=0;
 	char *stack ;
+	ucontext_t aux;
 
 	id++;
 
 	task->args = arg;
 	task->tid = id;
-	task->state=2;
+
 	getcontext (&task->context);
 
 	stack = malloc (STACKSIZE) ;
@@ -82,10 +79,6 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
-	task->prev=NULL;
-	task->next=NULL;
-
-	queue_append ((queue_t **) &pronta, (queue_t*) task) ;
 
 	#ifdef DEBUG
 	printf("task_create: criou tarefa %d\n", taskAtual->tid);
@@ -111,26 +104,17 @@ int task_switch (task_t *task){
 
 void task_exit (int exit_code){
 	
-	/*#ifdef DEBUG
+	#ifdef DEBUG
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
-	#endif*/
-
+	#endif
 	ucontext_t *aux= &taskAtual->context;
-
-	if(taskAtual!=&dispatcher){
-		queue_remove ((queue_t**) &pronta, (queue_t*) taskAtual) ;
-		pronta=pronta->prev;
-		//queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);
-		taskAtual=&dispatcher;	
-	}
-	else {
-
-		taskAtual=taskMain;
-	}
-	
-	swapcontext(aux,&taskAtual->context);	
+	taskAtual= taskMain;
+	swapcontext(aux, &taskMain->context);
 }
 
+int task_id (){
+	return taskAtual->tid;
+}
 int task_id (){
 	return taskAtual->tid;
 }
