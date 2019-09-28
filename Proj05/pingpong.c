@@ -31,8 +31,11 @@ void tratador (int signum)
 }
 
 task_t * scheduler(){
+<<<<<<< Updated upstream
 
-	return ptr;
+	pronta=pronta->next;
+	pronta->quantum=20;
+	return pronta;
 
 }
 
