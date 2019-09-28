@@ -29,7 +29,6 @@ void tratador ();
 
 
 task_t * scheduler(){
-<<<<<<< Updated upstream
 
 	pronta=pronta->next;
 	pronta->quantum=20;
