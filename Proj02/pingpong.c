@@ -16,10 +16,10 @@ task_t *taskMain;
 /*****************************************************/
 void pingpong_init () {
 
-	taskAtual = (task_t*)(malloc(sizeof(task_t)));
-	taskAtual->tid = 0;
-	taskAtual->context = ContextMain;
-	taskMain = taskAtual;
+	taskMain = (task_t*)(malloc(sizeof(task_t)));
+	taskMain->tid = 0;
+	taskMain->context = ContextMain;
+	taskAtual = taskMain;
 
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }

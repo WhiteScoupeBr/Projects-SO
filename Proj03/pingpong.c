@@ -127,7 +127,7 @@ void task_exit (int exit_code){
 		taskAtual=taskMain;
 	}
 	
-	swapcontext(aux,&taskMain->context);	
+	swapcontext(aux,&taskAtual->context);	
 }
 
 int task_id (){
