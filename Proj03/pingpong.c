@@ -20,10 +20,9 @@ task_t dispatcher;
 
 task_t * scheduler(){
 
-    task_t* ptr = pronta;
-    ptr=ptr->next;
+    pronta=pronta->next;
 
-    return ptr;
+    return pronta;
 }
 
 
@@ -118,17 +117,20 @@ void task_exit (int exit_code){
 	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
 	#endif
 
+	ucontext_t *aux= &taskAtual->context;
+
 	if(taskAtual!=&dispatcher){
-		queue_remove ((queue_t**) &pronta, (queue_t*) &taskAtual) ;
-		//queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);	
+		queue_remove ((queue_t**) &pronta, (queue_t*) taskAtual) ;
+		pronta=pronta->prev;
+		//queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);
+		taskAtual=&dispatcher;	
 	}
 	else {
+
 		taskAtual=taskMain;
 	}
-	ucontext_t *aux= &taskAtual->context;
-	taskAtual=taskMain;
+	
 	swapcontext(aux,&taskMain->context);	
-	//task_switch(&dispatcher);
 }
 
 int task_id (){
@@ -136,8 +138,7 @@ int task_id (){
 }
 
 void task_yield(){
-
-	queue_append ((queue_t**) &pronta, (queue_t*) taskAtual);	
+	
 	task_switch(&dispatcher);
 
 }
