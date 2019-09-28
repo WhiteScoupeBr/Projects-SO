@@ -21,7 +21,7 @@ task_t dispatcher;
 task_t * scheduler(){
 
     task_t* ptr = pronta;
-    queue_remove((queue_t**) &pronta, (queue_t*) ptr);
+    ptr=ptr->next;
 
     return ptr;
 }
@@ -120,17 +120,14 @@ void task_exit (int exit_code){
 
 	if(taskAtual!=&dispatcher){
 		queue_remove ((queue_t**) &pronta, (queue_t*) &taskAtual) ;
-		queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);	
+		//queue_append ((queue_t **) &terminada, (queue_t*) &taskAtual);	
 	}
 	else {
 		taskAtual=taskMain;
 	}
-
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual=taskMain;
 	swapcontext(aux,&taskMain->context);	
-
-
 	//task_switch(&dispatcher);
 }
 
