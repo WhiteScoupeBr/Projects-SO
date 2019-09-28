@@ -20,8 +20,8 @@ task_t dispatcher;
 
 task_t * scheduler(){
 
-    pronta=pronta->next;
-
+    pronta=pronta->next; 
+    printf("%d\n",pronta->tid );
     return pronta;
 }
 
@@ -35,9 +35,8 @@ void dispatcher_body (){ // dispatcher é uma tarefa
       next = scheduler() ; // scheduler é uma função
       if (next)
       {
-         // ações antes de lançar a tarefa "next", se houverem
-         task_switch (next) ; // transfere controle para a tarefa "next"
-         // ações após retornar da tarefa "next", se houverem
+ 
+         task_switch (next) ;
       }
    }
    printf("ENCERRANDO O DISPA\n");
