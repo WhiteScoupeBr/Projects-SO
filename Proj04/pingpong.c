@@ -66,7 +66,6 @@ void dispatcher_body (){ // dispatcher é uma tarefa
          task_switch (next) ;
       }
    }
-   printf("Dispacther");
  task_exit(0) ; // encerra a tarefa dispatcher
 }
 
@@ -130,8 +129,7 @@ int task_switch (task_t *task){
 }
 
 void task_exit (int exit_code){
-	
-		
+
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual->state=5;
 	if(taskAtual==&dispatcher){
@@ -140,8 +138,6 @@ void task_exit (int exit_code){
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
-		
-		pronta=pronta->prev;
 		taskAtual=&dispatcher;
 	}
 
