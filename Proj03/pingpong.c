@@ -21,6 +21,8 @@ task_t dispatcher;
 task_t * scheduler(){
 
     pronta=pronta->next; 
+
+
     return pronta;
 }
 
@@ -79,9 +81,6 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 
 	queue_append((queue_t**)&pronta,(queue_t*)task);
 
-	#ifdef DEBUG
-	printf("task_create: criou tarefa %d\n", taskAtual->tid);
-	#endif
 
 	return id;
 }
@@ -93,9 +92,6 @@ int task_switch (task_t *task){
 		taskAtual= task;
 		swapcontext(aux, &task->context);
 
-		#ifdef DEBUG
-		printf ("task_switch: trocando contexto %d -> %d\n", taskAtual->tid, task->tid ) ;
-		#endif
 	}
 	else
 		return -1;
@@ -104,9 +100,6 @@ int task_switch (task_t *task){
 void task_exit (int exit_code){
 	
 		
-	#ifdef DEBUG
-	printf ("task_exit: tarefa %d sendo encerrada \n", taskAtual->tid) ;
-	#endif
 	ucontext_t *aux= &taskAtual->context;
 	if(taskAtual==&dispatcher){
 		taskAtual=taskMain;
