@@ -23,22 +23,20 @@ task_t * scheduler(){
 
 	task_t *ptr = pronta;
 	task_t *ptrPrio;
-	int i;
+	int i,tam = queue_size((queue_t*)pronta);
 	int auxP = pronta->prioD;
 
-	for(i=0;i<=queue_size((queue_t*)pronta);i++){
+	for(i=0;i<=tam;i++){
 		if((ptr->prioD) < auxP){
 			auxP=ptr->prioD;
 			ptrPrio=ptr;
 		}
 		ptr=ptr->next;
 	}
-
-	ptr=ptr->next;
 	
-	for(i=0;i<=queue_size((queue_t*)pronta);i++){
+	for(i=0;i<=tam;i++){
 		if(ptr!=ptrPrio && ptr->prioD<(-19))
-			ptr->prioD--;
+			ptr->prioD=(ptr->prioD)-1;
 		ptr=ptr->next;
 	}
 
@@ -55,7 +53,7 @@ void task_yield(){
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 
-	pronta=pronta->prev;
+   pronta=pronta->prev;
    task_t* next;
    while ( queue_size((queue_t*) pronta) > 0 )
    {
