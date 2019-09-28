@@ -26,6 +26,11 @@ task_t * scheduler(){
     return pronta;
 }
 
+void task_yield(){
+	
+	task_switch(&dispatcher);
+
+}
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 
@@ -90,7 +95,7 @@ int task_switch (task_t *task){
 		ucontext_t *aux= &taskAtual->context;
 		taskAtual= task;
 		swapcontext(aux, &task->context);
-
+		task->state=4;
 	}
 	else
 		return -1;
@@ -106,6 +111,7 @@ void task_exit (int exit_code){
 	}
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
+		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
 		pronta=pronta->prev;
 		taskAtual=&dispatcher;
 	}
@@ -117,11 +123,7 @@ int task_id (){
 	return taskAtual->tid;
 }
 
-void task_yield(){
-	
-	task_switch(&dispatcher);
 
-}
 
 
 
