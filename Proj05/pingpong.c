@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "pingpong.h"
 #include "queue.h"
+#include <signal.h>
+#include <sys/time.h>
 
 // operating system check
 #if defined(_WIN32) || (!defined(__unix__) && !defined(__unix) && (!defined(__APPLE__) || !defined(__MACH__)))
@@ -9,7 +11,7 @@
 #endif
 
 #define STACKSIZE 32768
-
+#define QUANTUM 20
 
 ucontext_t contextMain;
 task_t *taskAtual;
@@ -17,35 +19,21 @@ task_t *taskMain;
 task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
 
+struct itimerval timer;
+struct sigaction action ;
+
 
 /*****************************************************/
 
+void tratador (int signum)
+{
+   printf ("Recebi o sinal %d\n", signum) ;
+}
+
 task_t * scheduler(){
 
-	task_t *ptr = pronta;
-	task_t *ptrPrio =pronta;
-	int i;
-	int tam = queue_size((queue_t*)pronta);
-	int auxP = pronta->prioD;
+	return ptr;
 
-
-	for(i=0;i<tam;i++){
-		if((ptr->prioD) < auxP){
-			auxP=ptr->prioD;
-			ptrPrio=ptr;
-		}
-		ptr=ptr->next;
-	}
-	
-	for(i=0;i<tam;i++){
-		if(ptr!=ptrPrio && ptr->prioD>(-19))
-			ptr->prioD=(ptr->prioD)-1;
-		ptr=ptr->next;
-	}
-
-	ptrPrio->prioD=ptrPrio->prio;
-
-    return ptrPrio;
 }
 
 void task_yield(){
@@ -78,6 +66,29 @@ void pingpong_init () {
 	taskAtual = taskMain;
 
 	task_create(&dispatcher,dispatcher_body,"Dispatcher");
+
+
+	action.sa_handler = tratador ;
+   sigemptyset (&action.sa_mask) ;
+   action.sa_flags = 0 ;
+   if (sigaction (SIGINT, &action, 0) < 0)
+   {
+      perror ("Erro em sigaction: ") ;
+      exit (1) ;
+   }
+  // ajusta valores do temporizador
+	timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
+	timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
+	timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
+	timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
+
+	// arma o temporizador ITIMER_REAL (vide man setitimer)
+	if (setitimer (ITIMER_REAL, &timer, 0) < 0)
+	{
+		perror ("Erro em setitimer: ") ;
+		exit (1) ;
+	}
+
 	setvbuf (stdout, 0, _IONBF, 0) ;
 }
 
