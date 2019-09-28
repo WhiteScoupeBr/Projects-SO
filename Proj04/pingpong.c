@@ -22,8 +22,9 @@ task_t dispatcher;
 task_t * scheduler(){
 
 	task_t *ptr = pronta;
-	task_t *ptrPrio;
-	int i,tam = queue_size((queue_t*)pronta);
+	task_t *ptrPrio =ptr;
+	int i;
+	int tam = queue_size((queue_t*)pronta);
 	int auxP = pronta->prioD;
 
 	for(i=0;i<=tam;i++){
