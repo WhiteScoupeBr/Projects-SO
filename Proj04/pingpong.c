@@ -9,10 +9,11 @@
 #endif
 
 #define STACKSIZE 32768
+
+
 ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
-task_t *taskPrio;
 task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
 
@@ -22,12 +23,13 @@ task_t dispatcher;
 task_t * scheduler(){
 
 	task_t *ptr = pronta;
-	task_t *ptrPrio =ptr;
+	task_t *ptrPrio =pronta;
 	int i;
 	int tam = queue_size((queue_t*)pronta);
 	int auxP = pronta->prioD;
 
-	for(i=0;i<=tam;i++){
+
+	for(i=0;i<tam;i++){
 		if((ptr->prioD) < auxP){
 			auxP=ptr->prioD;
 			ptrPrio=ptr;
@@ -35,8 +37,8 @@ task_t * scheduler(){
 		ptr=ptr->next;
 	}
 	
-	for(i=0;i<=tam;i++){
-		if(ptr!=ptrPrio && ptr->prioD<(-19))
+	for(i=0;i<tam;i++){
+		if(ptr!=ptrPrio && ptr->prioD>(-19))
 			ptr->prioD=(ptr->prioD)-1;
 		ptr=ptr->next;
 	}
@@ -64,6 +66,7 @@ void dispatcher_body (){ // dispatcher é uma tarefa
          task_switch (next) ;
       }
    }
+   printf("Dispacther");
  task_exit(0) ; // encerra a tarefa dispatcher
 }
 
@@ -89,7 +92,7 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 	task->tid = id;
 	task->state= 2;
 	task->prio =0;
-	task->prioD = task->prio;
+	task->prioD = 0;
 	getcontext (&task->context);
 
 	stack = malloc (STACKSIZE) ;
@@ -167,8 +170,6 @@ void task_setprio (task_t *task, int prio){
 	{
 		printf("Prioridade invalida");
 	}
-	
-	
 }
 
 int task_getprio (task_t *task){
