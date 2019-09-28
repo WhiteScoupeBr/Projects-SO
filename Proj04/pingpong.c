@@ -55,6 +55,7 @@ void task_yield(){
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 
+	pronta=pronta->prev;
    task_t* next;
    while ( queue_size((queue_t*) pronta) > 0 )
    {
@@ -155,10 +156,12 @@ void task_setprio (task_t *task, int prio){
 		if(ptr==NULL){
 			taskAtual->prio=prio;
 			taskAtual->prioD=prio;
+			return;
 		}
 		else{
 			ptr->prio=prio;
 			ptr->prioD=prio;
+			return;
 		}
 	}
 	else
