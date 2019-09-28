@@ -27,7 +27,7 @@ task_t * scheduler(){
 	int auxP = pronta->prioD;
 
 	for(i=0;i<=queue_size((queue_t*)pronta);i++){
-		if(ptr->prioD<auxP){
+		if((ptr->prioD) < auxP){
 			auxP=ptr->prioD;
 			ptrPrio=ptr;
 		}
@@ -37,10 +37,8 @@ task_t * scheduler(){
 	ptr=ptr->next;
 	
 	for(i=0;i<=queue_size((queue_t*)pronta);i++){
-		if(ptr!=ptrPrio){
-			if(ptr->prioD<-19)
-						ptr->prioD--;
-		}
+		if(ptr!=ptrPrio && ptr->prioD<(-19))
+			ptr->prioD--;
 		ptr=ptr->next;
 	}
 
@@ -58,7 +56,7 @@ void task_yield(){
 void dispatcher_body (){ // dispatcher é uma tarefa
 
    task_t* next;
-   while ( queue_size((queue_t*) pronta) > 1 )
+   while ( queue_size((queue_t*) pronta) > 0 )
    {
       next = scheduler() ; // scheduler é uma função
       if (next)
@@ -105,10 +103,11 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 		perror ("Erro na criação da pilha: ");
 		exit (1);
 	}
-
+	
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
-	queue_append((queue_t**)&pronta,(queue_t*)task);
+	if(task!=&dispatcher)
+		queue_append((queue_t**)&pronta,(queue_t*)task);
 
 
 	return id;
