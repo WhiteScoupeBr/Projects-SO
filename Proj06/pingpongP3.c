@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "pingpong.h"
 #include "queue.h"
+#include <signal.h>
+#include <sys/time.h>
 
 // operating system check
 #if defined(_WIN32) || (!defined(__unix__) && !defined(__unix) && (!defined(__APPLE__) || !defined(__MACH__)))
@@ -24,10 +26,17 @@ task_t dispatcher;
 unsigned int tempo=0;
 
 
+
+
 /*****************************************************/
-void incrementa (int signum);
 unsigned int systime () ;
 void imprimeValores(task_t* task);
+
+void incrementa (int signum)
+{
+	printf("Nao funfa");
+  	tempo++;
+}
 
 task_t * scheduler(){
 
@@ -43,17 +52,14 @@ void task_yield(){
 
 }
 
-void incrementa (int signum)
-{
-  tempo++;
-}
+
 
 unsigned int systime () {
 	return tempo;
 }
 
 void imprimeValores(task_t* task){
-	printf("Task %d exit: ",task->id);
+	printf("Task %d exit: ",task->tid);
 	printf("execution time %d ms, ",task->execTime);
 	printf("process time %d ms, ",task->processTime);
 	printf("%d activiations ",task->activs);
@@ -80,13 +86,14 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
 void pingpong_init () {
 
+	setvbuf (stdout, 0, _IONBF, 0) ;
 	taskMain = (task_t*)(malloc(sizeof(task_t)));
 	taskMain->tid = 0;
 	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
 	task_create(&dispatcher,dispatcher_body,"Dispatcher");
-	setvbuf (stdout, 0, _IONBF, 0) ;
+	
 
 	action.sa_handler = incrementa ;
 	sigemptyset (&action.sa_mask) ;
@@ -109,6 +116,7 @@ void pingpong_init () {
 		perror ("Erro em setitimer: ") ;
 		exit (1) ;
 	}
+	//while(1);
 }
 
 int task_create (task_t *task, void (*start_routine)(void *), void *arg){
@@ -166,7 +174,7 @@ void task_exit (int exit_code){
 	taskAtual->state=5;
 	if(taskAtual==&dispatcher){
 		taskAtual->execTime= taskAtual->execTime-systime();
-		void imprimeValores(taskAtual);
+		imprimeValores(taskAtual);
 		taskAtual=taskMain;
 	}
 	else{
@@ -174,7 +182,7 @@ void task_exit (int exit_code){
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
 		pronta=pronta->prev;
 		taskAtual->execTime= taskAtual->execTime-systime();
-		void imprimeValores(taskAtual);
+		imprimeValores(taskAtual);
 		taskAtual=&dispatcher;
 	}
 	
