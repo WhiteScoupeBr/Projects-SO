@@ -172,6 +172,7 @@ void task_exit (int exit_code){
 	
 	if(taskAtual==&dispatcher){
 		taskAtual=taskMain;
+		queue_remove((queue_t**)&pronta,(queue_t*)&dispatcher);
 		
 	}
 	else{
