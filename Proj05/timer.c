@@ -36,10 +36,10 @@ int main ()
   }
 
   // ajusta valores do temporizador
-  timer.it_value.tv_usec = 0 ;      // primeiro disparo, em micro-segundos
-  timer.it_value.tv_sec  = 3 ;      // primeiro disparo, em segundos
-  timer.it_interval.tv_usec = 0 ;   // disparos subsequentes, em micro-segundos
-  timer.it_interval.tv_sec  = 1 ;   // disparos subsequentes, em segundos
+  timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
+  timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
+  timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
+  timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
 
   // arma o temporizador ITIMER_REAL (vide man setitimer)
   if (setitimer (ITIMER_REAL, &timer, 0) < 0)

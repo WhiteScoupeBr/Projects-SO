@@ -42,8 +42,10 @@ void task_yield(){
 }
 
 void preemp(int signum){
+	
+
 	taskAtual->quantum--;
-	printf("Tratador");
+	
 	if(taskAtual->flag==0){
 		if(taskAtual->quantum==0)
 		task_yield();
@@ -72,24 +74,29 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
 void pingpong_init () {
 
+	setvbuf (stdout, 0, _IONBF, 0) ;
+
 	taskMain = (task_t*)(malloc(sizeof(task_t)));
 	taskMain->tid = 0;
 	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
 	task_create(&dispatcher,dispatcher_body,"Dispatcher");
+	queue_remove((queue_t**)&pronta,(queue_t*)&dispatcher);
+	dispatcher.flag=1;
 
-
+	// registra a a��o para o sinal de timer SIGALRM
 	action.sa_handler = preemp ;
-   sigemptyset (&action.sa_mask);
-   action.sa_flags = 0 ;
-   if (sigaction (SIGINT, &action, 0) < 0)
-   {
-      perror ("Erro em sigaction: ") ;
-      exit (1) ;
-   }
-  // ajusta valores do temporizador
-	timer.it_value.tv_usec = 0 ;      // primeiro disparo, em micro-segundos
+	sigemptyset (&action.sa_mask) ;
+	action.sa_flags = 0 ;
+	if (sigaction (SIGALRM, &action, 0) < 0)
+	{
+		perror ("Erro em sigaction: ") ;
+		exit (1) ;
+	}
+
+	// ajusta valores do temporizador
+	timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
 	timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
 	timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
 	timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
@@ -100,8 +107,7 @@ void pingpong_init () {
 		perror ("Erro em setitimer: ") ;
 		exit (1) ;
 	}
-
-	setvbuf (stdout, 0, _IONBF, 0) ;
+	//while(1);
 }
 
 int task_create (task_t *task, void (*start_routine)(void *), void *arg){
@@ -133,13 +139,17 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 	
 	makecontext (&task->context,(void *)(*start_routine), 1, arg);
 
-	if(task!=&dispatcher){
+	queue_append((queue_t**)&pronta,(queue_t*)task);
+	task->flag=0;
+
+	/*if(task==&dispatcher){
+		task->flag=1;
+	}
+	else{
 		queue_append((queue_t**)&pronta,(queue_t*)task);
 		task->flag=0;
-	}
-	else
-		task->flag=1;
-		
+	}*/
+
 	return id;
 }
 
@@ -159,14 +169,15 @@ int task_switch (task_t *task){
 void task_exit (int exit_code){
 		
 	ucontext_t *aux= &taskAtual->context;
-	taskAtual->state=5;
+	
 	if(taskAtual==&dispatcher){
 		taskAtual=taskMain;
+		
 	}
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
-		
+		taskAtual->state=5;
 		pronta=pronta->prev;
 		taskAtual=&dispatcher;
 	}
