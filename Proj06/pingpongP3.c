@@ -37,7 +37,7 @@ void imprimeValores(task_t* task);
 // tratador do sinal
 void tratador (int signum)
 {
-  printf ("Recebi o sinal %d\n", signum) ;
+  tempo++; 	
 }
 
 
@@ -81,7 +81,7 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 		{
 			soma= systime();
 			task_switch (next) ;
-			soma = soma - systime();
+			soma = systime()-soma;
 			next->processTime+=soma;
 		}
 	}
@@ -178,7 +178,7 @@ void task_exit (int exit_code){
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual->state=5;
 	if(taskAtual==&dispatcher){
-		taskAtual->execTime= taskAtual->execTime-systime();
+		taskAtual->execTime= systime()-taskAtual->execTime;
 		imprimeValores(taskAtual);
 		taskAtual=taskMain;
 	}
@@ -186,7 +186,7 @@ void task_exit (int exit_code){
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
 		pronta=pronta->prev;
-		taskAtual->execTime= taskAtual->execTime-systime();
+		taskAtual->execTime= systime()-taskAtual->execTime;
 		imprimeValores(taskAtual);
 		taskAtual=&dispatcher;
 	}

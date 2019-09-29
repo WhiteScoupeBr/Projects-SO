@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include "pingpong.h"
 #include "queue.h"
-
+#include <signal.h>
+#include <sys/time.h>
 // operating system check
 #if defined(_WIN32) || (!defined(__unix__) && !defined(__unix) && (!defined(__APPLE__) || !defined(__MACH__)))
 #warning Este codigo foi planejado para ambientes UNIX (LInux, *BSD, MacOS). A compilacao e execucao em outros ambientes e responsabilidade do usuario.
@@ -10,15 +11,28 @@
 
 #define STACKSIZE 32768
 
+// estrutura que define um tratador de sinal (deve ser global ou static)
+struct sigaction action ;
+
+// estrutura de inicialização to timer
+struct itimerval timer;
 
 ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
 task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
-
+unsigned int tempo=0;
 
 /*****************************************************/
+unsigned int systime () ;
+void imprimeValores(task_t* task);
+
+// tratador do sinal
+void tratador (int signum)
+{
+  tempo++; 	
+}
 
 task_t * scheduler(){
 
@@ -54,16 +68,31 @@ void task_yield(){
 
 }
 
+unsigned int systime () {
+	return tempo;
+}
+
+void imprimeValores(task_t* task){
+	printf("Task %d exit: ",task->tid);
+	printf("execution time %d ms, ",task->execTime);
+	printf("process time %d ms, ",task->processTime);
+	printf("%d activiations ",task->activs);
+}
+
 void dispatcher_body (){ // dispatcher é uma tarefa
 
    pronta=pronta->prev;
    task_t* next;
+   unsigned int soma;
    while ( queue_size((queue_t*) pronta) > 0 )
    {
       next = scheduler() ; // scheduler é uma função
       if (next)
       {
-         task_switch (next) ;
+         	soma= systime();
+			task_switch (next) ;
+			soma = systime()-soma;
+			next->processTime+=soma;
       }
    }
  task_exit(0) ; // encerra a tarefa dispatcher
@@ -71,13 +100,38 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
 void pingpong_init () {
 
+	setvbuf (stdout, 0, _IONBF, 0) ;
 	taskMain = (task_t*)(malloc(sizeof(task_t)));
 	taskMain->tid = 0;
 	taskMain->context = contextMain;
 	taskAtual = taskMain;
 
 	task_create(&dispatcher,dispatcher_body,"Dispatcher");
-	setvbuf (stdout, 0, _IONBF, 0) ;
+
+		// registra a a��o para o sinal de timer SIGALRM
+	action.sa_handler = tratador ;
+	sigemptyset (&action.sa_mask) ;
+	action.sa_flags = 0 ;
+	if (sigaction (SIGALRM, &action, 0) < 0)
+	{
+		perror ("Erro em sigaction: ") ;
+		exit (1) ;
+	}
+
+	// ajusta valores do temporizador
+	timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
+	timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
+	timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
+	timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
+
+	// arma o temporizador ITIMER_REAL (vide man setitimer)
+	if (setitimer (ITIMER_REAL, &timer, 0) < 0)
+	{
+		perror ("Erro em setitimer: ") ;
+		exit (1) ;
+	}
+	//while (1) ;
+	
 }
 
 int task_create (task_t *task, void (*start_routine)(void *), void *arg){
@@ -92,6 +146,9 @@ int task_create (task_t *task, void (*start_routine)(void *), void *arg){
 	task->state= 2;
 	task->prio =0;
 	task->prioD = 0;
+	task->execTime=systime();
+	task->processTime=0;
+	task->activs=0;
 	getcontext (&task->context);
 
 	stack = malloc (STACKSIZE) ;
@@ -121,6 +178,7 @@ int task_switch (task_t *task){
 		ucontext_t *aux= &taskAtual->context;
 		taskAtual= task;
 		taskAtual->state=4;
+		task->activs++;
 		swapcontext(aux, &task->context);
 		
 	}
@@ -133,11 +191,15 @@ void task_exit (int exit_code){
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual->state=5;
 	if(taskAtual==&dispatcher){
+		taskAtual->execTime= systime()-taskAtual->execTime;
+		imprimeValores(taskAtual);
 		taskAtual=taskMain;
 	}
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
+		taskAtual->execTime= systime()-taskAtual->execTime;
+		imprimeValores(taskAtual);
 		taskAtual=&dispatcher;
 	}
 
