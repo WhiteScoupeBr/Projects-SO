@@ -60,18 +60,23 @@ void imprimeValores(task_t* task){
 }
 
 void dispatcher_body (){ // dispatcher é uma tarefa
+	
+	unsigned int soma;
+	task_t* next;
+	while ( queue_size((queue_t*) pronta) > 1 )
+	{
 
-   task_t* next;
-   while ( queue_size((queue_t*) pronta) > 1 )
-   {
-      next = scheduler() ; // scheduler é uma função
-      if (next)
-      {
-         task_switch (next) ;
-      }
-   }
- task_exit(0) ; // encerra a tarefa dispatcher
-}
+		next = scheduler() ; // scheduler é uma função
+		if (next)
+		{
+			soma= systime();
+			task_switch (next) ;
+			soma = soma - systime();
+			next->processTime+=soma;
+		}
+	}
+	task_exit(0) ; // encerra a tarefa dispatcher
+	}
 
 void pingpong_init () {
 
@@ -147,7 +152,6 @@ int task_switch (task_t *task){
 		ucontext_t *aux= &taskAtual->context;
 		taskAtual= task;
 		taskAtual->state=4;
-		task->processTime=systime();
 		task->activs++;
 		swapcontext(aux, &task->context);
 	}
@@ -161,14 +165,15 @@ void task_exit (int exit_code){
 	ucontext_t *aux= &taskAtual->context;
 	taskAtual->state=5;
 	if(taskAtual==&dispatcher){
+		taskAtual->execTime= taskAtual->execTime-systime();
+		void imprimeValores(taskAtual);
 		taskAtual=taskMain;
 	}
 	else{
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
 		pronta=pronta->prev;
-		taskAtual->execTime-=systime();
-		taskAtual->processTime-=systime();
+		taskAtual->execTime= taskAtual->execTime-systime();
 		void imprimeValores(taskAtual);
 		taskAtual=&dispatcher;
 	}
