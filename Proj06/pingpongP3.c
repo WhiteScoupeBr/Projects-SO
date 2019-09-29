@@ -18,6 +18,8 @@ struct sigaction action ;
 // estrutura de inicialização to timer
 struct itimerval timer;
 
+
+
 ucontext_t contextMain;
 task_t *taskAtual;
 task_t *taskMain;
@@ -32,11 +34,13 @@ unsigned int tempo=0;
 unsigned int systime () ;
 void imprimeValores(task_t* task);
 
-void incrementa (int signum)
+// tratador do sinal
+void tratador (int signum)
 {
-	printf("Nao funfa");
-  	tempo++;
+  printf ("Recebi o sinal %d\n", signum) ;
 }
+
+
 
 task_t * scheduler(){
 
@@ -94,29 +98,30 @@ void pingpong_init () {
 
 	task_create(&dispatcher,dispatcher_body,"Dispatcher");
 	
+  // registra a a��o para o sinal de timer SIGALRM
+  action.sa_handler = tratador ;
+  sigemptyset (&action.sa_mask) ;
+  action.sa_flags = 0 ;
+  if (sigaction (SIGALRM, &action, 0) < 0)
+  {
+    perror ("Erro em sigaction: ") ;
+    exit (1) ;
+  }
 
-	action.sa_handler = incrementa ;
-	sigemptyset (&action.sa_mask) ;
-	action.sa_flags = 0 ;
-	if (sigaction (SIGALRM, &action, 0) < 0)
-	{
-		perror ("Erro em sigaction: ") ;
-		exit (1) ;
-	}
+  // ajusta valores do temporizador
+  timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
+  timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
+  timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
+  timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
 
-	// ajusta valores do temporizador
-	timer.it_value.tv_usec = 1000 ;      // primeiro disparo, em micro-segundos
-	timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
-	timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
-	timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
+  // arma o temporizador ITIMER_REAL (vide man setitimer)
+  if (setitimer (ITIMER_REAL, &timer, 0) < 0)
+  {
+    perror ("Erro em setitimer: ") ;
+    exit (1) ;
+  }
+  //while (1) ;
 
-	// arma o temporizador ITIMER_REAL (vide man setitimer)
-	if (setitimer (ITIMER_REAL, &timer, 0) < 0)
-	{
-		perror ("Erro em setitimer: ") ;
-		exit (1) ;
-	}
-	//while(1);
 }
 
 int task_create (task_t *task, void (*start_routine)(void *), void *arg){
