@@ -87,9 +87,10 @@ void dispatcher_body (){ // dispatcher é uma tarefa
    while ( queue_size((queue_t*) pronta) > 0 )
    {
       next = scheduler() ; // scheduler é uma função
+	  soma= systime();
       if (next)
       {
-         	soma= systime();
+         	
 			task_switch (next) ;
 			soma = systime()-soma;
 			next->processTime+=soma;

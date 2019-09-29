@@ -26,6 +26,7 @@ task_t *taskMain;
 task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
 unsigned int tempo=0;
+unsigned int soma=0;
 
 
 
