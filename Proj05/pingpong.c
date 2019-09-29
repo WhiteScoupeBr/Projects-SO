@@ -25,7 +25,7 @@ struct sigaction action ;
 
 /*****************************************************/
 
-void tratador ();
+void preemp ();
 
 
 task_t * scheduler(){
@@ -41,7 +41,7 @@ void task_yield(){
 
 }
 
-void tratador(int signum){
+void preemp(int signum){
 	taskAtual->quantum--;
 	printf("Tratador");
 	if(taskAtual->flag==0){
@@ -81,8 +81,8 @@ void pingpong_init () {
 	task_create(&dispatcher,dispatcher_body,"Dispatcher");
 
 
-	action.sa_handler = tratador ;
-   sigemptyset (&action.sa_mask) ;
+	action.sa_handler = preemp ;
+   sigemptyset (&action.sa_mask);
    action.sa_flags = 0 ;
    if (sigaction (SIGINT, &action, 0) < 0)
    {
@@ -93,7 +93,7 @@ void pingpong_init () {
 	timer.it_value.tv_usec = 0 ;      // primeiro disparo, em micro-segundos
 	timer.it_value.tv_sec  = 0 ;      // primeiro disparo, em segundos
 	timer.it_interval.tv_usec = 1000 ;   // disparos subsequentes, em micro-segundos
-	timer.it_interval.tv_sec  = 0.1 ;   // disparos subsequentes, em segundos
+	timer.it_interval.tv_sec  = 0 ;   // disparos subsequentes, em segundos
 
 	// arma o temporizador ITIMER_REAL (vide man setitimer)
 	if (setitimer (ITIMER_REAL, &timer, 0) < 0)
