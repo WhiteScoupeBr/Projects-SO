@@ -60,7 +60,7 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
    pronta=pronta->prev;
    task_t* next;
-   while ( queue_size((queue_t*) pronta) > 0 )
+   while ( queue_size((queue_t*) pronta) > 1 )
    {
       next = scheduler() ; // scheduler é uma função
       if (next)
