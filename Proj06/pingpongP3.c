@@ -72,11 +72,11 @@ void imprimeValores(task_t* task){
 
 void dispatcher_body (){ // dispatcher é uma tarefa
 	
-	unsigned int soma;
+	
 	task_t* next;
 	while ( queue_size((queue_t*) pronta) > 1 )
 	{
-
+		soma=0;
 		next = scheduler() ; // scheduler é uma função
 		if (next)
 		{
@@ -188,6 +188,8 @@ void task_exit (int exit_code){
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
 		pronta=pronta->prev;
 		taskAtual->execTime= systime()-taskAtual->execTime;
+		soma = systime() -soma;
+		taskAtual->processTime+=soma;
 		imprimeValores(taskAtual);
 		taskAtual=&dispatcher;
 	}

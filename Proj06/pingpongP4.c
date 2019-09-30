@@ -23,6 +23,7 @@ task_t *taskMain;
 task_t *pronta,*suspensa,*terminada;
 task_t dispatcher;
 unsigned int tempo=0;
+unsigned int soma=0;
 
 /*****************************************************/
 unsigned int systime () ;
@@ -83,14 +84,16 @@ void dispatcher_body (){ // dispatcher é uma tarefa
 
    pronta=pronta->prev;
    task_t* next;
-   unsigned int soma;
+   
    while ( queue_size((queue_t*) pronta) > 0 )
    {
+		soma=0;
       next = scheduler() ; // scheduler é uma função
 	  soma= systime();
       if (next)
       {
          	
+			soma= systime();
 			task_switch (next) ;
 			soma = systime()-soma;
 			next->processTime+=soma;
@@ -200,6 +203,8 @@ void task_exit (int exit_code){
 		queue_remove((queue_t**)&pronta,(queue_t*)taskAtual);
 		queue_append((queue_t**)&terminada,(queue_t*)taskAtual);
 		taskAtual->execTime= systime()-taskAtual->execTime;
+		soma = systime() -soma;
+		taskAtual->processTime+=soma;
 		imprimeValores(taskAtual);
 		taskAtual=&dispatcher;
 	}
